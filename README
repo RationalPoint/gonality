@@ -9,7 +9,7 @@ computations in
 
 CODE AUTHOR: Xander Faber
 
-LICENSE: ???
+LICENSE: GPL-3.0 License 
 
 A command that begins with "sage:" is intended to be run in an interactive Sage
 session. A command that begins with "$" is intended to be run on the command
