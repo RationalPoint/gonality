@@ -48,7 +48,9 @@ TABLE OF CONTENTS
   - orthogonal_stabilizer
   - new_orthogonal_group  
   - char2_dim4_nonsplit_smooth_orthogonal_group
+  - char2_dim4_nonsplit_quadric_automorphism_group
   - odd_char_dim4_nonsplit_smooth_orthogonal_group
+  - odd_char_dim4_nonsplit_quadric_automorphism_group
   - char2_dim5_smooth_orthogonal_group
   - char2_dim5_nonsplit_rank4_orthogonal_group
   - odd_char_dim5_smooth_orthogonal_group
@@ -68,8 +70,13 @@ TABLE OF CONTENTS
   - genus5_g14_invariants
   - has_gonality_four
   - test_curves_for_gonality_five
-  - nodal_quintics
+  - genus5_trigonal_curves
   - IntersectionOfThreeQuadrics (class)
+
+- HYPERELLIPTIC CURVES
+  - even_characteristic_hyperelliptic_search
+  - odd_characteristic_hyperelliptic_search
+  - hyperelliptic_search
 
 """
 
@@ -2324,7 +2331,6 @@ def orthogonal_transit_matrix(quadratic_form, src_points, targ_points,
   write_list_of_mats_to_file(grp_elts,filename)
   return grp_elts[0]
 
-
 ################################################################################
 
 def new_orthogonal_group(quadratic_form, projective=True, filename=None, **kwargs):
@@ -2371,13 +2377,15 @@ def new_orthogonal_group(quadratic_form, projective=True, filename=None, **kwarg
 
   base_points = Y[0]
   print('Computing stabilizer group for {}'.format(base_points))
-  stabilizer = orthogonal_stabilizer(Q,base_points,projective=projective,**kwargs)
+  args = (Q,base_points)
+  stabilizer = orthogonal_stabilizer(*args,projective=projective,**kwargs)
 
   orbit_mats = []
   print('Computing transit matrices for {} sets of points'.format(len(Y)-1))
   for i,other_points in enumerate(Y[1:],1):
     print('Computing transit matrix for point {}'.format(i))
-    h = orthogonal_transit_matrix(Q,base_points,other_points,projective=projective,**kwargs)
+    args = (Q,base_points,other_points)
+    h = orthogonal_transit_matrix(*args,projective=projective,**kwargs)
     orbit_mats.append(h)
 
   grp_elts = stabilizer[:]
@@ -2404,8 +2412,8 @@ def char2_dim4_nonsplit_smooth_orthogonal_group(field, u, **kwargs):
 
   OUTPUT:
 
-  - A complete list of representatives in GL_4(field) of the group
-    PO(vw + x^2 + uxy + y^2). 
+  - A complete list of elements in GL_4(field) of the group
+    O(vw + x^2 + uxy + y^2). 
 
   NOTE:
 
@@ -2425,7 +2433,6 @@ def char2_dim4_nonsplit_smooth_orthogonal_group(field, u, **kwargs):
       (x*y, a23*a32*u + a22*a33*u + a03*a12 + a02*a13)
       (y^2, a23*a33*u + a03*a13 + a23^2 + a33^2)
 
-
   - The 3-fold vw + x^2 + uxy + y^2 = 0 has q^3 - q^2 + q affine solutions. (We
     drop the all-zeros solution because it gives a non-invertible matrix.) We
     loop over two copies of this set of solutions.  The 3-fold vw + x^2 + uxy +
@@ -2437,6 +2444,10 @@ def char2_dim4_nonsplit_smooth_orthogonal_group(field, u, **kwargs):
   q = field.cardinality()
   if not q % 2 == 0:
     raise ValueError('{} does not have characteristic 2'.format(field))
+  R = PolynomialRing(field,'T')
+  T = R.gen()
+  if not (T**2 + u*T + 1).is_irreducible():
+    raise ValueError('Quadratic form vw + x^2 + ({})xy + y^2 is split'.format(u))
   pts0 = [None]*(q**3 - q**2 + q - 1)
   pts1 = [None]*(q**3+q)
   pt0_index = 0
@@ -2486,28 +2497,65 @@ def char2_dim4_nonsplit_smooth_orthogonal_group(field, u, **kwargs):
   return mats
 
 ################################################################################
-          
-def odd_char_dim4_nonsplit_smooth_orthogonal_group(field, u, **kwargs):
+
+def char2_dim4_nonsplit_quadric_automorphism_group(field, u, **kwargs):
   r"""
-  Compute the orthogonal group of vw + x^2 + uy^2 over field
+  Compute the automorphism group of the quadric surface V(vw + x^2 + uxy + y^2) over field
 
   INPUT:
 
-  - ``field`` -- a field of odd characteristic
+  - ``field`` -- a field of characteristic 2
 
-  - ``u`` -- an element of ``field`` such that x^2 + uy^2 is irreducible
+  - ``u`` -- an element of ``field`` such that `Q = x^2 + uxy + y^2` is irreducible
 
   - Remaining keyword arguments are passed to Progress class
 
   OUTPUT:
 
-  - A complete list of representatives in GL_4(field) of the group
-    O(vw + x^2 + uy^2). 
+  - A complete list of elements `g \in GL_4(field)` such that `Q(g) = cQ` for
+    some nonzero `c \in field`.
+
+  NOTE:
+
+  - If `g` is an element of the orthogonal group of `Q` and `a` is a nonzero
+    element of ``field``, then `Q(ag) = a^2 Q`. Conversely, since every nonzero
+    element of ``field`` is a square, any automorphism of the variety `V(Q)`
+    arises as a multiple of an element of the orthogonal group of Q
+  
+  """
+  OQ = char2_dim4_nonsplit_smooth_orthogonal_group(field,u,**kwargs)
+  auts = []
+  for c in field:
+    if c == 0: continue
+    auts += [c*g for g in OQ]
+  return auts
+
+################################################################################
+          
+def odd_char_dim4_nonsplit_smooth_orthogonal_group(field, u, s=None, **kwargs):
+  r"""
+  Compute the (twisted) orthogonal group of vw + x^2 + uy^2 over field
+
+  INPUT:
+
+  - ``field`` -- a field of odd characteristic
+
+  - ``u`` -- an element of ``field`` such that `Q = x^2 + uy^2` is irreducible
+
+  - ``s`` -- optional element for twisting the orthogonal group (default: 1)
+
+  - Remaining keyword arguments are passed to Progress class
+
+  OUTPUT:
+
+  - A complete list of elements `g \in GL_4(field))` such that `Q(g) = sQ`; when
+    `s = 1`, this is the usual orthogonal group of `Q`.
 
   NOTE:
 
   - L.E. Dickson showed that SO(vw + x^2 + uy^2) has cardinality
-    (q**2)*(q**2+1)*(q**2-1) on p.160 of his book (case m=4). 
+    (q**2)*(q**2+1)*(q**2-1) on p.160 of his book (case m=4). Moreover, if `Q =
+    vw + x^2 + uy^2`, then `Q(A(v,w,x,y))` has coefficients
       
       (v^2, a00*a10 + a20^2 + u*a30^2)
       (v*w, 2*a30*a31*u + a01*a10 + a00*a11 + 2*a20*a21)
@@ -2531,6 +2579,17 @@ def odd_char_dim4_nonsplit_smooth_orthogonal_group(field, u, **kwargs):
   q = field.cardinality()
   if not q % 2 == 1:
     raise ValueError('{} does not have odd characteristic'.format(field))
+  R = PolynomialRing(field,'T')
+  T = R.gen()
+  if not (T**2 + u).is_irreducible():
+    raise ValueError('Quadratic form vw + x^2 + ({})y^2 is split'.format(u))
+  if s is None:
+    s = field(1)
+  elif s == 0:
+    raise ValueError('s = 0 is not an allowed value')
+  else:
+    s = field(s)
+    
   pts0 = [None]*(q**3 - q**2 + q - 1)
   pts1 = [None]*(q**3+q)
   ptsu = [None]*(q**3+q)
@@ -2543,10 +2602,10 @@ def odd_char_dim4_nonsplit_smooth_orthogonal_group(field, u, **kwargs):
     if quad_val == 0:
       pts0[pt0_index] = (a,b,c,d)
       pt0_index += 1
-    elif quad_val == 1:
+    elif quad_val == s:
       pts1[pt1_index] = (a,b,c,d)
       pt1_index += 1
-    if quad_val == u: # This must be an if statement in case u = 1
+    if quad_val == s*u: # This must be an if statement in case u = 1
       ptsu[ptu_index] = (a,b,c,d)
       ptu_index += 1
       
@@ -2561,7 +2620,7 @@ def odd_char_dim4_nonsplit_smooth_orthogonal_group(field, u, **kwargs):
   prog = progress.Progress(len(pts0)**2*len(pts1)*len(ptsu), **kwargs)
   for a00, a10, a20, a30 in pts0: # v^2
     for a01, a11, a21, a31 in pts0: # w^2
-      if 2*a30*a31*u + a01*a10 + a00*a11 + 2*a20*a21 != 1: # vw
+      if 2*a30*a31*u + a01*a10 + a00*a11 + 2*a20*a21 != s: # vw
         prog(len(pts1)*len(ptsu))
         continue
       for a02, a12, a22, a32 in pts1: # x^2
@@ -2585,6 +2644,58 @@ def odd_char_dim4_nonsplit_smooth_orthogonal_group(field, u, **kwargs):
   prog.finalize()
   assert mats[-1] is not None
   return mats
+
+################################################################################
+
+def odd_char_dim4_nonsplit_quadric_automorphism_group(field, u, **kwargs):
+  r"""
+  Compute the automorphism group of the quadric surface V(vw + x^2 + uy^2) over field
+
+  INPUT:
+
+  - ``field`` -- a field of characteristic 2
+
+  - ``u`` -- an element of ``field`` such that `Q = x^2 + uy^2` is irreducible
+
+  - Remaining keyword arguments are passed to Progress class
+
+  OUTPUT:
+
+  - A complete list of elements `g \in GL_4(field)` such that `Q(g) = cQ` for
+    some nonzero `c \in field`. 
+
+  NOTE:
+
+  - If `g` is an element of the orthogonal group of `Q` and `a` is a nonzero
+    element of ``field``, then `Q(ag) = a^2 Q`. And if `t` is any non-square in
+    ``field`` such that `Q(g) = tQ`, then `Q(ag) = at^2Q. Conversely, we can
+    obtain any automorphism of `V(Q)` in one of these two ways.
+  
+  """
+  # Find squares and the "least" nonsquare
+  sqrts = set()
+  squares = set()
+  for a in field:
+    if a == 0: continue
+    if a**2 in squares: continue
+    sqrts.add(a)
+    squares.add(a**2)
+  s = None
+  for a in field:
+    if a == 0: continue
+    if a in squares: continue
+    s = a
+    break
+  sqrts = sorted(list(sqrts))
+
+  auts = []
+  OQ = odd_char_dim4_nonsplit_smooth_orthogonal_group(field,u,**kwargs)
+  for a in sqrts:
+    auts += [a*g for g in OQ]
+  OQs = odd_char_dim4_nonsplit_smooth_orthogonal_group(field,u,s,**kwargs)
+  for a in sqrts:
+    auts += [a*g for g in OQs]
+  return auts
 
 ################################################################################
 
@@ -3025,22 +3136,25 @@ def odd_char_dim5_nonsplit_rank4_orthogonal_group(field, u, **kwargs):
 ###############################  GENUS-3 CURVES  ###############################
 ################################################################################
 
-def genus3_canonical_curves(polring, **kwargs):
+def genus3_canonical_curves(polring, extra_tests=None, **kwargs):
   r"""
-  Return a list of equations for smooth plane quartics over GF(q), up to isomorphism
+  Return a list of smooth plane quartics over GF(q), up to isomorphism
 
   INPUT:
 
   - ``polring`` -- a polynomial ring over a finite field in 3 variables, 
     say GF(q)[x,y,z]
 
+  - ``extra_tests`` -- a list of boolean-valued function of a quartic polynomial, 
+    used to filter the the curves returned
+
   - Remaining keyword arguments are passed to progress
   
   OUTPUT:
 
-  - a list of homogeneous quartic polynomials with the property that any
-    canonically embedded genus-3 curve is given by one of them, and no two
-    polynomials yield isomorphic curves
+  - a list of homogeneous quartic polynomials passing all tests in
+    ``extra_tests` with the property that any canonically embedded genus-3 curve
+    is given by one of them, and no two polynomials yield isomorphic curves
 
   """
   FF = polring.base_ring()
@@ -3051,7 +3165,10 @@ def genus3_canonical_curves(polring, **kwargs):
   monomials = homogeneous_monomials(polring,4)
   N = len(monomials)
   assert N == 15
-  monomials.sort(reverse=True) 
+  monomials.sort(reverse=True)
+
+  if extra_tests is None:
+    extra_tests = []
 
   print('Storing automorphisms of P^2 ...')
   PGL3 = []
@@ -3069,6 +3186,7 @@ def genus3_canonical_curves(polring, **kwargs):
   for pol in poly_iterator(monomials,projective=True):
     prog()
     if pol in seen: continue
+    if not all(test(pol) for test in extra_tests): continue
     for g in PGL3:
       gpol = matrix_act_on_poly(g,pol)
       lc = gpol.lc()
@@ -3141,12 +3259,17 @@ def genus4_canonical_curves(quadratic_form, filename=None, **kwargs):
     prog()
     if F in seen:
       continue
+    # Look at F(g(x)) + Q*L for g \in O(Q) and L a line
     for g in Oq:
-      gF = F(*(g*xx))
-      lc = gF.lc()
-      if lc != 1:
-        gF *= FF(1)/lc
-      seen.add(gF)
+      for coefs in affine_space_point_iterator(FF,3):
+        L = sum(c*x for c,x in zip(coefs,xx))
+        gFL = F(*(g*xx)) + Q*L
+        if gFL == 0:
+          seen.add(gFL)
+          continue
+        lc = gFL.lc()
+        if lc != 1: gFL *= FF(1)/lc
+        seen.add(gFL)
     I = polring.ideal(Q,F)
     # Check that Q = F = 0 defines a curve
     if ideal_dimension(I) != 2: continue
@@ -3843,30 +3966,61 @@ def test_curves_for_gonality_five(q1, filename, outfileprefix=None, **kwargs):
 
 ################################################################################
 
-def genus5_trigonal_curves(field, points='all', term_bound=None, **kwargs):
+def genus5_trigonal_curves(field, filename=None, **kwargs):
   r"""
-  Return a list of genus-5 irreducible plane quintics over ``field``
+  Return all trigonal genus-5 irreducible plane quintics over ``field``, up to isomorphism
 
   INPUT:
 
-  - ``field`` -- a finite field
+  - ``field`` -- a finite field `F`
 
-  - ``points`` -- either 'all' (default) or a list of points of the plane that 
-    the quintics are required to pass through
-
-  - ``term_bound`` -- optional bound on the number of terms we allow
-    the quintic to have (for finding compact examples)
+  - ``filename`` -- string giving file in which to dump output
 
   - Remaining keyword arguments are passed to Progress.progress
 
   OUTPUT:
 
-  - If ``term_bound`` is None, a list of all irreducible quintic forms over
-    ``field`` that have a single quadratic singularity at (0,0) -- and hence
-    genus 5 -- and vanish at ``points``
+  - A list of pairs `(pol,c)`, where `pol` is an irreducible quintic form over
+    `F` that has a unique quadratic singularity at (0,0) and `c` is the number
+    of linear automorphisms preserving that form. Every trigonal genus-5 curve
+    is isomorphic to one and only one plane curve with a polynomial as returned
+    by this function.
 
-  - If ``term_bound`` is not None, return a single irreducible quintic as above
-    with at most ``term_bound`` terms, or None if no such exists.
+  EFFECT:
+
+  - If ``filename`` is given, then the output polynomials are written to disk,
+    one per line. Each line will also contain the number of automorphisms, 
+    separated by a comma.
+
+  NOTE:
+
+  - Any trigonal genus-5 curve may be realized in P^2 as a plane quintic with a
+    unique `F`-rational quadratic singularity. This representation is unique of
+    to `PGL_3(F)` transformation because the `g^1_3` on such a curve is
+    unique. We may assume our curve passes through (0,0,1). Up to equivalence,
+    the quadratic forms vanishing at (0,0,1) are : `xy`, `x^2`, and `N(x,y)`,
+    where `N` is a norm form for the unique quadratic extension of `F`. If `Q`
+    is one of these quadratic forms, we will only consider polynomials of the
+    form
+
+      ..math::
+
+        P = Q z^3 + g(x,y,z),
+ 
+    where `g` is a quintic form that vanishes to order at least 3 at (0,0,1). If
+    (0,0,1) is the unique singularity of the corresponding plane curve, and if
+    the `y^3z^2`-term has nonzero coefficient when `Q = x^2`, then `P` defines a
+    trigonal curve of genus 5.  If `O(Q)` is the orthogonal group inside
+    `GL_2(F)` of one such form, then any linear transformation that preserves
+    this type of equation has the form
+
+       ..math::
+
+           (  cA | 0 )
+           (   B | 1 )
+
+    where `A \in O(Q)`, `B` is an arbitrary row vector of length 2, and `c` is a
+    nonzero element of the field.
 
   """
   FF = field
@@ -3874,8 +4028,8 @@ def genus5_trigonal_curves(field, points='all', term_bound=None, **kwargs):
     raise ValueError('{} is not a finite field'.format(FF))
   q = FF.cardinality()
 
-  if points == 'all':
-    points = list(proj_space_point_iterator(FF,2))
+  if filename is not None:
+    fp = open(filename,'w')
 
   R = PolynomialRing(FF,names=('x','y','z'))
   x,y,z = R.gens()
@@ -3887,11 +4041,9 @@ def genus5_trigonal_curves(field, points='all', term_bound=None, **kwargs):
   monomials.remove(x**2*z**3)
   monomials.remove(y**2*z**3)
   assert len(monomials) == 15
-  if term_bound is None:
-    num_terms = 18
-  else:
-    num_terms = term_bound
 
+  # List of quadratic forms that determine the singularity type:
+  # split node, cusp, nonsplit node
   Qs = [x*y*z**3, x**2 * z**3]
   S = PolynomialRing(FF,names=('T',))
   T = S.gen()
@@ -3903,43 +4055,61 @@ def genus5_trigonal_curves(field, points='all', term_bound=None, **kwargs):
       Qs.append((x**2 + a*y**2)*z**3)
       break
 
+  # Construct subgroups of PGL3 that preserve the given singularity types
+  # Any such element element has the form
+  print('Computing linear groups preserving the singularity types ...')
+  R2 = PolynomialRing(FF,names=('X','Y'))
+  X,Y = R2.gens()
+  Gs = []
+  nonzero = [a for a in FF if a != 0]
+  for Q in Qs:
+    G = []
+    # Use projective representatives of OQ so that there is no duplicate
+    # among the values of cA for c \in F^* and A \in OQ
+    POQ = naive_orthogonal_group(Q(X,Y,1),projective=True) 
+    for A in POQ:
+      for bb in itertools.product(FF,FF):
+        for c in nonzero:
+          B = matrix(FF,1,2,bb)
+          g = block_matrix(FF,2,2,[[c*A,0],[B,1]])
+          G.append(g)
+    Gs.append(G)
+
   # Now we do 3 separate searches: one for the cuspidal case,
   # one for each of the split/nonsplit nodal cases
   print()
   msg = 'Searching for curves with a {} at (0,0,1) ...'
   sing_types = ['split node','cusp','nonsplit node']
   quintics = []
-  for sing_type,Q in zip(sing_types,Qs):
+  n = len(monomials)
+  for sing_type,Q,G in zip(sing_types,Qs,Gs):
     print(msg.format(sing_type))
-    rows = []
-    for pt in points:
-      rows.append([pol(pt) for pol in monomials + [Q]])
-    M = matrix(FF,rows)
-    coef_basis = M.right_kernel().basis()
-    n = len(coef_basis)
-    if n == 0: continue
-
-    total_work = (q**n - 1)//(q-1)
+    total_work = q**n
     prog = progress.Progress(total_work,**kwargs)
     print('Search 2^{:.2f} quintics'.format(float(log(total_work,2))))
     P2 = ProjectiveSpace(R)
-    for aa in proj_space_point_iterator(FF,n-1):
+    seen = set()
+    for cc in affine_space_point_iterator(FF,n):
       prog()
-      coefs = sum(a*v for a,v in zip(aa,coef_basis))
-      pol = sum(c*mon for c,mon in zip(coefs,monomials+[Q]))      
-      if len(pol.dict()) > num_terms: continue
+      pol = Q + sum(c*term for c,term in zip(cc,monomials))
+      if pol in seen: continue
+      auts = 0
+      for g in G:
+        newpol = matrix_act_on_poly(g,pol)
+        assert newpol.monomial_coefficient(Q) == 1
+        seen.add(newpol)
+        if newpol == pol: auts += 1
+      if sing_type == 'cusp' and pol.monomial_coefficient(y**3*z**2) == 0: continue
       if not ideal_is_prime(R.ideal(pol)): continue
       sing_ideal = R.ideal([pol.derivative(u) for u in R.gens()] + [pol])
       Z = P2.subscheme(sing_ideal)
       if len(Z.irreducible_components()) > 1: continue
-      if term_bound is not None:
-        prog.finalize()
-        return pol
-      quintics.append(pol)
+      quintics.append((pol,auts))
+      if filename is not None:
+        fp.write('{}, {}\n'.format(pol,auts))
     prog.finalize()
-  if term_bound is not None:
-    # No example found, else we would have returned already
-    return None
+  if filename is not None:
+    fp.close()
   return(quintics)
 
 ################################################################################
@@ -3964,8 +4134,8 @@ class IntersectionOfThreeQuadrics():
     FF = R.base_ring()
     if not FF.is_finite():
       raise ValueError('{} is not a finite field!'.format(FF))
+    I = R.ideal(forms)
     if check:
-      I = R.ideal(forms)
       if ideal_dimension(I) != 2:
         raise ValueError('Given forms do not cut out a curve')
       if not ideal_is_prime(I):
@@ -3979,13 +4149,14 @@ class IntersectionOfThreeQuadrics():
     self._polring = R
     self._base_ring = FF
     self._forms = tuple(forms)
+    self._ideal = I
 
   def __repr__(self):
     msg = 'Genus-5 curve cut out by quadratic forms in {}'.format(self._polring)
     return msg
 
   def __str__(self):
-    msg = 'Genus-5 curve cut out by\n'
+    msg = 'Genus-5 curve over {} cut out by\n'.format(self._base_ring)
     for form in self._forms:
       msg += '  {}\n'.format(form)
     return msg
@@ -3998,6 +4169,9 @@ class IntersectionOfThreeQuadrics():
 
   def forms(self):
     return self._forms
+
+  def ideal(self):
+    return self._ideal
 
   def has_a_g14(self):
     g14_invariants = genus5_g14_invariants(self._polring)
@@ -4072,3 +4246,255 @@ class IntersectionOfThreeQuadrics():
       if num != num_pts: continue
       return Q
     return None
+
+  def automorphism_group(self):
+    r"""
+    Return the automorphism group of self in PGL_5
+    """
+    raise NotImplementedError('This implementation is terrible!')
+    FF = self._base_ring
+    I = self._ideal
+    forms = self._forms
+    G = []
+    for aa in itertools.product(FF,repeat=25):
+      g = matrix(FF,5,5,aa)
+      if not g.is_invertible(): continue
+      is_good = True
+      for Q in forms:
+        if not matrix_act_on_poly(g,Q) in I:
+          is_good = False
+          break
+      if is_good:
+        G.append(g)
+    return G
+
+################################################################################
+############################  HYPERELLIPTIC CURVES  ############################
+################################################################################
+
+def odd_characteristic_hyperelliptic_search(FF, g, filename=None, **kwargs):
+  r"""
+  Search for hyperelliptic curves over FF
+
+  INPUT:
+
+  - ``FF`` -- a finite field of odd characteristic
+
+  - ``g`` -- an integer > 1
+
+  - ``filename`` -- string giving file in which to dump output
+
+  - Remaining keywords are passed to the progress.Progress class init
+
+  OUTPUT:
+
+  - A list of pairs `(P(x),n)` such that `y^2 = P(x)` describes a hyperelliptic
+    curve of genus ``g`` with `n` automorphisms, and such that any hyperelliptic
+    curve of genus ``g`` over ``FF`` is given by exactly one such a polynomial.
+
+  EFFECT:
+
+  - If ``filename`` is given, then the output polynomials are written to disk,
+    one per line. Each line will also contain the number of automorphisms, 
+    separated by a comma.
+
+  NOTE:
+
+  - This is a naive search through all possible hyperelliptic equations.
+
+  - The automorphism group is a subgroup of 
+
+      .. math::
+
+         (GL_2(FF) \times FF^*) / ( (a,b) : a^{g+1} = e ).
+
+    The subgroup we're quotienting by has order (q-1) / gcd(g+1,q-1).
+
+  """
+  q = FF.cardinality()
+  if q % 2 != 1:
+    raise ValueError('Field cardinality must be odd!')
+  
+  GL2 = []
+  for aa in affine_space_point_iterator(FF,4):
+    M = matrix(FF,2,2,aa)
+    if M.is_invertible():
+      GL2.append(aa)
+  R = PolynomialRing(FF,'x')
+  x = R.gen()
+
+  nonzero = [a for a in FF if a != 0]
+  pairs = itertools.product(nonzero,nonzero)
+  numtriv = ZZ((q-1) / gcd(q-1,g+1))
+  
+  if filename is not None:
+    fp = open(filename,'w')
+    
+  seen = set()
+  good = []
+  prog = progress.Progress(q**(2*g+3),**kwargs)
+  for aa in affine_space_point_iterator(FF,2*g+3):
+    prog()
+    P = R(aa)
+    if P in seen: continue
+    if P.degree() < 2*g+1: continue
+    if gcd(P,P.derivative()) != 1: continue
+    auts = 0
+    for e in nonzero:
+      for a,b,c,d in GL2:
+        newP = R(e**(-2) * (c*x+d)**(2*g+2) * P( (a*x+b)/(c*x+d)))
+        seen.add(newP)
+        if P == newP: auts += 1
+    assert auts % numtriv == 0, 'auts = {}, numtriv = {}'.format(auts,numtriv)
+    auts = ZZ(auts/numtriv)
+    if filename is not None:
+      fp.write('{}, {}\n'.format(P,auts))
+    good.append((P,auts))
+  prog.finalize()
+
+  if filename is not None:
+    fp.close()
+  return good
+
+################################################################################
+
+def even_characteristic_hyperelliptic_search(FF, g, filename=None, **kwargs):
+  r"""
+  Search for hyperelliptic curves over FF
+
+  INPUT:
+
+  - ``FF`` -- a finite field of even characteristic
+
+  - ``g`` -- an integer > 1
+
+  - ``filename`` -- string giving file in which to dump output
+
+  - Remaining keywords are passed to the progress.Progress class init
+
+  OUTPUT:
+
+  - A list of triples `(P(x),Q(x),n)` where `y^2 + Q(x)*y = P(x)` describes a
+    hyperelliptic curve of genus ``g`` with `n` automorphisms, and such that any
+    hyperelliptic curve of genus ``g`` over ``FF`` is given by exactly one such
+    equation.
+
+  EFFECT:
+
+  - If ``filename`` is given, then the output pairs are written to disk, one per
+    line. Each line will also contain the number of automorphisms, separated by
+    a comma.
+
+  NOTE:
+
+  - This is a naive search through all possible hyperelliptic equations.
+
+  - The elements of the automorphism group that act trivially have the form
+
+      .. math::
+
+         (x,y) \mapsto (g(x), (ey + H) / (cx+d)^{g+1} )
+
+    with `H = 0`, `g = \lambda * I`. It follows that `e = \lambda^{g+1}`, so the
+    subgroup we need to quotient by has order (q-1) / gcd(g+1,q-1). 
+
+  """
+  q = FF.cardinality()
+  if q % 2 != 0:
+    raise ValueError('Field cardinality must be even!')
+  GL2 = []
+  for aa in affine_space_point_iterator(FF,4):
+    M = matrix(FF,2,2,aa)
+    if M.is_invertible():
+      GL2.append(aa)
+  R = PolynomialRing(FF,'x')
+  x = R.gen()
+
+  nonzero = [a for a in FF if a != 0]
+  pairs = itertools.product(nonzero,nonzero)
+  numtriv = ZZ((q-1) / gcd(q-1,g+1))
+
+  if filename is not None:
+    fp = open(filename,'w')
+    
+  seen = set()
+  good = []
+  prog = progress.Progress(q**(2*g+3 + g+2),**kwargs)
+  for bb in affine_space_point_iterator(FF,g+2):
+    Q = R(bb)
+    Qprime = Q.derivative()
+    for aa in affine_space_point_iterator(FF,2*g+3):
+      prog()
+      P = R(aa)
+      if P.degree() < 2*g+1 and Q.degree() < g: continue
+      if (P,Q) in seen: continue
+      Pprime = P.derivative()
+      # Check smoothness
+      if gcd(Q,Qprime**2 * P + Pprime**2) != 1: continue
+      bgplus1 = Q.monomial_coefficient(x**(g+1))
+      if bgplus1 == 0:
+        bg = Q.monomial_coefficient(x**g)
+        atop = P.monomial_coefficient(x**(2*g+2))
+        anext = P.monomial_coefficient(x**(2*g+1))
+        if bg**2 * atop + anext**2 == 0: continue
+      auts = 0
+      for a,b,c,d in GL2:
+        A = a*x + b
+        B = c*x + d
+        Q1 = R( B**(g+1)*Q(A/B) )
+        P1 = R( B**(2*g+2)*P(A/B) )
+        for HH in affine_space_point_iterator(FF,g+2):
+          H = R(HH)
+          for e in nonzero:
+            Qnew = Q1 / e
+            Pnew = (1/e)**2 * (H**2  + P1 + H*Q1)
+            seen.add((Pnew,Qnew))
+            if (P,Q) == (Pnew,Qnew): auts += 1
+      assert auts % numtriv == 0, 'auts = {}, numtriv = {}'.format(auts,numtriv)
+      auts = ZZ(auts/numtriv)
+      good.append((P,Q,auts))
+      if filename is not None:
+        fp.write('{}, {}, {}\n'.format(P,Q,auts))
+  prog.finalize()
+
+  if filename is not None:
+    fp.close()
+  return good
+
+################################################################################
+
+def hyperelliptic_search(FF, g, filename=None, **kwargs):
+  r"""
+  Search for hyperelliptic curves over FF
+
+  INPUT:
+
+  - ``FF`` -- a finite field
+
+  - ``g`` -- an integer > 1
+
+  - ``filename`` -- string giving file in which to dump output
+
+  - Remaining keywords are passed to the progress.Progress class init
+
+  OUTPUT:
+
+  - A list of pairs of polynomials `(P(x),Q(x))` such that `y^2 + Q(x)*y = P(x)`
+    describes a hyperelliptic curve of genus ``g``, and such that any
+    hyperelliptic curve of genus ``g`` over ``FF`` is given by exactly one such
+    equation. 
+
+  EFFECT:
+
+  - If ``filename`` is given, then the output pairs are written to disk,
+    one per line. 
+
+  """
+  q = FF.cardinality()
+  if q == Infinity:
+    raise ValueError('Field {} is not finite'.format(FF))
+  if q % 2 == 0:
+    return even_characteristic_hyperelliptic_search(FF,g,filename,**kwargs)
+  elif q % 2 == 1:
+    return odd_characteristic_hyperelliptic_search(FF,g,filename,**kwargs)
+    

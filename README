@@ -2,14 +2,14 @@ This README gives a description of the sequence of steps required to perform the
 computations in
 
 [1] Faber, Xander and Grantham, Jon. "Binary Curves of small fixed genus and
-    gonality with many rational points." Preprint, 2020.
+    gonality with many rational points." J. Algebra. 597 (2022) pp. 24--26.
 
 [2] Faber, Xander and Grantham, Jon. "Ternary and Quaternary Curves of small
-    fixed genus and gonality with many rational points." Preprint, 2020.
+    fixed genus and gonality with many rational points." Exp. Math. (2021).
 
 CODE AUTHOR: Xander Faber
 
-LICENSE: GPL-3.0 License 
+LICENSE: GPL-3.0 License
 
 A command that begins with "sage:" is intended to be run in an interactive Sage
 session. A command that begins with "$" is intended to be run on the command
@@ -67,15 +67,15 @@ all of the C source files.
 2. Run Algorithm 3 to find smooth curves among the intersections of the cubic
    surfaces output by Algorithm 2 and the quadric surface V(xy + N(z,w))
 
-   Adjust the top few lines of the script genus4_gonality5_finish.sage to point
-   to the directory where genus4_GF4.data lives. (Also change q if you would
-   like to look at the case q = 2 or 3.)
+     $ sage genus4_gonality5_finish.py 4 [path to genus4_GF4.data]
 
-     sage: runfile genus4_gonality5_finish.sage
-     sage: print(good_cubics)
+   (Replace all of the 4s with 2s or 3s if you would like to look at the
+   case q = 2 or 3, respectively.)
 
-   The list good_cubics contains every cubic form F that was identified such
-   that V(F) \cap V(xy + N(z,w)) is a smooth curve of genus 4 and gonality 5. 
+   The output will be written to the file genus4_GF4.data.smooth.  It gives a
+   complete list of isomorphism classes of cubic forms F that where identified
+   such that V(F) \cap V(xy + N(z,w)) is a smooth curve of genus 4 and gonality
+   5. 
 
 --------------------------------------------------------------------------------
 
@@ -89,7 +89,7 @@ all of the Sage and Python scripts in a single working directory.
 1. Compute orthogonal groups for the relevant quadratic forms.
 
    To write the projective orthogonal group of vw + x^2 + y^2 in
-   GF(3)[v,w,x,y,z] to the file 'OQ_vw_xx_yy.data':
+   GF(3)[v,w,x,y,z] to the file 'POQ_vw_xx_yy.data':
 
      sage: import search_tools
      sage: POQ = search_tools.odd_char_dim5_nonsplit_rank4_orthogonal_group(GF(3), 1)
