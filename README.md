@@ -4,11 +4,9 @@
 
 We give a description of the sequence of steps required to perform the computations in the papers
 
-1. Faber, Xander and Grantham, Jon. "Binary Curves of small fixed genus and gonality with many rational points."  
-_Journal of Algebra_ 597 (2022) pp. 24--26. [arXiv:2005.07054 [math.NT]](https://arxiv.org/abs/2005.07054)
+1. Faber, Xander and Grantham, Jon. "Binary Curves of small fixed genus and gonality with many rational points." _Journal of Algebra_ 597 (2022) pp. 24--26. [arXiv:2005.07054 [math.NT]](https://arxiv.org/abs/2005.07054)
 
-2. Faber, Xander and Grantham, Jon. "Ternary and Quaternary Curves of small fixed genus and gonality with many rational points."  
-_Experimental Mathematics_ (2021). [arXiv:2010.07992 [math.NT]](https://arxiv.org/abs/2010.07992)
+2. Faber, Xander and Grantham, Jon. "Ternary and Quaternary Curves of small fixed genus and gonality with many rational points." _Experimental Mathematics_ (2021). [arXiv:2010.07992 [math.NT]](https://arxiv.org/abs/2010.07992)
 
 CODE AUTHOR: Xander Faber
 
