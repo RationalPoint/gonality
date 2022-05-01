@@ -4,22 +4,20 @@
 
 We give a description of the sequence of steps required to perform the computations in the papers
 
-1. Faber, Xander and Grantham, Jon. "Binary Curves of small fixed genus and gonality with many rational points." J. Algebra. 597 (2022) pp. 24--26.   
- [arXiv:2005.07054 [math.NT]](https://arxiv.org/abs/2005.07054)
+1. Faber, Xander and Grantham, Jon. "Binary Curves of small fixed genus and gonality with many rational points."  
+_Journal of Algebra_ 597 (2022) pp. 24--26. [arXiv:2005.07054 [math.NT]](https://arxiv.org/abs/2005.07054)
 
-2. Faber, Xander and Grantham, Jon. "Ternary and Quaternary Curves of small fixed genus and gonality with many rational points." Exp. Math. (2021).   
- [arXiv:2010.07992 [math.NT]](https://arxiv.org/abs/2010.07992)
+2. Faber, Xander and Grantham, Jon. "Ternary and Quaternary Curves of small fixed genus and gonality with many rational points."  
+_Experimental Mathematics_ (2021). [arXiv:2010.07992 [math.NT]](https://arxiv.org/abs/2010.07992)
 
 CODE AUTHOR: Xander Faber
 
 LICENSE: GPL-3.0 License
 
-A command that begins with "sage:" is intended to be run in an interactive Sage
-session.   
-A command that begins with "$" is intended to be run on the command
-line.
+A command that begins with "sage:" is intended to be run in an interactive Sage session.  
+A command that begins with "$" is intended to be run on the command line.
 
--
+---
 
 #### Procedure described in Lemma 5.6 of Reference 2.
 
@@ -27,25 +25,25 @@ These instructions assume that you have all of the Sage and Python scripts in a 
 
 1. Run the search for genus-4 canonical curves on V(Q) with 15 rational points.
 
- At the top of the genus4_optimal_search.sage script, adjust the value of the variable `num_points_to_target` to be 15. Then run the script with  
+   At the top of the `genus4_optimal_search.sage` script, adjust the value of the variable `num_points_to_target` to be 15. Then run the script with  
  
- ```
- $ sage genus4_optimal_search.sage 1 0 15pts.data
- ```  
+   ```
+   $ sage genus4_optimal_search.sage 1 0 15pts.data
+   ```  
 
- The file `15pts.data` will contain all cubic forms F such that V(F) \cap V(Q) is a smooth curve with 15 rational points.
+   The file `15pts.data` will contain all cubic forms F such that V(F) \cap V(Q) is a smooth curve with 15 rational points.
 
 2. Run the search for genus-4 canonical curves on V(Q) with 14 rational points.
  
- At the top of the genus4_optimal_search.sage script, adjust the value of the variable `num_points_to_target` to be 14. Then run the script with
+   At the top of the `genus4_optimal_search.sage` script, adjust the value of the variable `num_points_to_target` to be 14. Then run the script with
 
- ```
-  $ sage genus4_optimal_search.sage 1 0 14pts.data
- ```
+   ```
+    $ sage genus4_optimal_search.sage 1 0 14pts.data
+   ```
    
- The file `14pts.data` will contain all cubic forms F such that V(F) \cap V(Q) is a smooth curve with 14 rational points.
+   The file `14pts.data` will contain all cubic forms F such that V(F) \cap V(Q) is a smooth curve with 14 rational points.
 
--
+---
 
 #### Algorithms 2 and 3 in Reference 2.
 
@@ -72,7 +70,7 @@ These instructions assume that you have a working directory containing all of th
 
  The output will be written to the file `genus4_GF4.data.smooth`.  It gives a complete list of isomorphism classes of cubic forms F that where identified such that V(F) \cap V(xy + N(z,w)) is a smooth curve of genus 4 and gonality 5. 
 
--
+---
 
 #### Procedures from Section 6.5 of Reference 2, including Algorithm 4
 
