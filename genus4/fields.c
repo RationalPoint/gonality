@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------------*/
-/*		 Genus-4 Extremely Pointless Curve Search Code                */
+/*		      Genus-4 Excessive Curve Search Code                     */
 /*----------------------------------------------------------------------------*/
 
 #include "genus4.h"
@@ -57,12 +57,12 @@ void field_elements_array(fq_t **elts, fq_ctx_t GFq)
   }
 
   // DEBUG
-  fprintf(stdout,"Field elements: ");
-  for (i=0; i<card; i++)
-  {
-    fprintf(stdout,"%s ",fq_get_str_pretty(elts_ptr[i],GFq));
-  }
-  fprintf(stdout,"\n");
+  // fprintf(stdout,"Field elements: ");
+  // for (i=0; i<card; i++)
+  // {
+  //   fprintf(stdout,"%s ",fq_get_str_pretty(elts_ptr[i],GFq));
+  // }
+  // fprintf(stdout,"\n");
   // END DEBUG
     
   fq_clear(x,GFq);
@@ -134,12 +134,12 @@ void subfield_elements_array(fq_t **elts, fq_ctx_t GFq, long d)
     if (k == subfld_card) break;
   }
   // DEBUG
-  fprintf(stdout,"Subfield elements: ");
-  for (i=0; i<subfld_card; i++)
-  {
-    fprintf(stdout,"%s ",fq_get_str_pretty(elts_ptr[i],GFq));
-  }
-  fprintf(stdout,"\n");
+  // fprintf(stdout,"Subfield elements: ");
+  // for (i=0; i<subfld_card; i++)
+  // {
+  //   fprintf(stdout,"%s ",fq_get_str_pretty(elts_ptr[i],GFq));
+  // }
+  // fprintf(stdout,"\n");
   // END DEBUG
     
   fq_clear(x,GFq);
@@ -231,12 +231,12 @@ void construct_fields(long q, fq_ctx_t GFq_squared, fq_t **quad_elts)
   for (i=0; i<q*q; i++) fq_set(*(quad_ptr+i),tmp[i],GFq_squared);
 
   // DEBUG
-  fprintf(stdout,"Reordered field elements: ");
-  for (i=0; i<q*q; i++)
-  {
-    fprintf(stdout,"%s ",fq_get_str_pretty(*(quad_ptr+i),GFq_squared));
-  }
-  fprintf(stdout,"\n");
+  // fprintf(stdout,"Reordered field elements: ");
+  // for (i=0; i<q*q; i++)
+  // {
+  //   fprintf(stdout,"%s ",fq_get_str_pretty(*(quad_ptr+i),GFq_squared));
+  // }
+  // fprintf(stdout,"\n");
   // END DEBUG
   
   

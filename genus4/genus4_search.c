@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------------*/
-/*		 Genus-4 Extremely Pointless Curve Search Code                */
+/*		      Genus-4 Excessive Curve Search Code                     */
 /*----------------------------------------------------------------------------*/
 
 #include "genus4.h"
@@ -20,7 +20,7 @@ int main(int argc, char **argv)
     return(1);
   }
   q = strtol(argv[1],NULL,10);
-  fprintf(stdout, "\nSearching for extremely pointless genus-4 curves over GF(%ld)\n",q);
+  fprintf(stdout, "\nSearching for excessive genus-4 curve candidates over GF(%ld)\n",q);
   FILE *fp = fopen(argv[2],"w");
 
   // Construct GF(q) (rat_elts) and GF(q^2) (quad_elts)
@@ -142,7 +142,7 @@ int main(int argc, char **argv)
   }
   fprintf(stdout,"Average points tested per cubic: %.2f\n",((float) pts_tested) / total_cubics);
   format_time(time_str,time(NULL)-begin);
-  fprintf(stdout,"Found %ld extremely pointless curves\n",count);
+  fprintf(stdout,"Found %ld excessive curve candidates\n",count);
   fprintf(stdout,"Total time: %s\n",time_str);
     
 

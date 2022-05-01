@@ -1,12 +1,12 @@
-/*		 Genus-4 Extremely Pointless Curve Search Code                */
 /*----------------------------------------------------------------------------*/
+/*		      Genus-4 Excessive Curve Search Code                     */
 /*----------------------------------------------------------------------------*/
 
 /*------------------------------------------------------------------------------
 
-Only searching for extremely pointless curves when q = 2,3,4
-because Lauter's method rules out the case q = 5, 7, and Weil's
-inequality rules out q > 7.
+An excessive curve is a curve over a finite field of genus g and gonality g+1.
+We only search for excessive curves when q = 2,3,4 because Lauter's method rules
+out the case q = 5, 7, and Weil's inequality rules out q > 7.
 
 Every such curve is canonically embedded in P^3 as the intersection
 of a unique quadric surface and a cubic surface, and the quadric
