@@ -15,7 +15,9 @@ msg += 'into "jobs" and distribute one job to each of a certain number '
 msg += 'of Sage instances. Each Sage instance will process the elements '
 msg += 'of its job and write its output to disk. Thus, an appropriate '
 msg += 'Sage script must accept three arguments:'
-msg += '  "num_jobs", "job", and "filename".'
+msg += '  "num_jobs", "job", and "filename". '
+msg += 'Additional required arguments can come afterward in the Sage script, '
+msg += 'and these are specified with the -e flag in sage_launcher.py. '
 msg += 'If any job returns a code other than 0, all jobs are immediately stopped.'
 
 # Parse some arguments
@@ -27,6 +29,7 @@ parser.add_argument('-c','--cat', action='store_true', help='cat outfiles togeth
 parser.add_argument('-l','--logfile', type=str, help='logfile prefix (default: log)')
 parser.add_argument('-o','--outfile', type=str, help='outfile prefix (default: out)')
 parser.add_argument('-s','--sage', type=str, help='command to run sage (default: sage)')
+parser.add_argument('-e','--extra_args', type=str, help='Additional arguments expected by the Sage script')
 args = parser.parse_args()
 
 # Rename arguments
@@ -39,6 +42,12 @@ log_prefix = args.logfile if args.logfile else 'log'
 
 if num_jobs <= 0:
   raise ValueError('Invalid number of jobs: {}'.format(num_jobs))
+
+# Grab all extra arguments for sage script
+if args.extra_args is None:
+  extra_args = []
+else:
+  extra_args = args.extra_args.split(' ')
 
 # Prepare for time printing
 def format_time(t):
@@ -83,6 +92,7 @@ for job in range(num_jobs):
   log_file = data_path / (log_prefix + '.{}'.format(job))
   out_file = data_path / (out_prefix + '.{}'.format(job))
   cmd = [sage_cmd, str(script_path), str(num_jobs), str(job), str(out_file)]
+  cmd += extra_args
   fp = open(log_file,'w')
   proc = subprocess.Popen(cmd,stdout=fp,stderr=subprocess.STDOUT)
   running_jobs.append((proc,fp,job))
