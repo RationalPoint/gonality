@@ -1,7 +1,6 @@
 #!/usr/local/bin/python
 
 import math, sys, time
-from builtins import range
 
 class Progress(object):
   r"""
@@ -11,8 +10,8 @@ class Progress(object):
 
   - ``num_steps`` -- positive integer; total number of steps in the loop
 
-  - ``steps_until_print`` -- positive integer (default: 100); number of passes
-    through loop before a percentage is printed 
+  - ``steps_until_print`` -- positive integer (default: num_steps / 100); number
+    of passes through loop before a percentage is printed
 
   """
   def __init__(self, num_steps, steps_until_print=None):
@@ -45,7 +44,7 @@ class Progress(object):
     i = self._current_step
     steps = self._num_steps
     if self._steps_since_print >= self._steps_until_print:
-      sys.stdout.write('{:.2f}% '.format( float(i * 100.0 / steps)))
+      sys.stdout.write('{:5.2f}% '.format( float(i * 100.0 / steps)))
       sys.stdout.flush()
       self._printed += 1
       self._steps_since_print = 0
